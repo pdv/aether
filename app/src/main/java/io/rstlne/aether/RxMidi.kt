@@ -1,5 +1,6 @@
 package io.rstlne.aether
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.media.midi.MidiInputPort
 import android.media.midi.MidiManager
@@ -39,6 +40,7 @@ fun MidiMessage.toByteArray(channel: Int): ByteArray {
 
 interface RxMidi {
     fun start()
+    fun start(bluetoothDevice: BluetoothDevice)
     val output: Consumer<MidiMessage>
 }
 
@@ -50,8 +52,16 @@ class RxMidiImpl(context: Context) : RxMidi {
 
     override fun start() {
         // TODO: More than one device
+        disposeBag.clear()
         val info = midiManager.devices[0]
         midiManager.openDevice(info, {
+            routeOutput(it.openInputPort(0))
+        }, Handler(Looper.getMainLooper()))
+    }
+
+    override fun start(bluetoothDevice: BluetoothDevice) {
+        disposeBag.clear()
+        midiManager.openBluetoothDevice(bluetoothDevice, {
             routeOutput(it.openInputPort(0))
         }, Handler(Looper.getMainLooper()))
     }
