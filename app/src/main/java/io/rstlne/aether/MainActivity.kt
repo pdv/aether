@@ -9,13 +9,17 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.SeekBar
 import com.jakewharton.rxbinding2.view.touches
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.gridLayout
 import org.jetbrains.anko.linearLayout
 import org.jetbrains.anko.margin
+import org.jetbrains.anko.matchParent
+import org.jetbrains.anko.seekBar
 import org.jetbrains.anko.spinner
 import org.jetbrains.anko.verticalLayout
+import org.jetbrains.anko.verticalMargin
 import org.jetbrains.anko.view
 
 
@@ -54,6 +58,8 @@ class MainActivity : AppCompatActivity() {
             setScale(root, scale)
         }
 
+    private var velocity: Int = 127
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -64,6 +70,7 @@ class MainActivity : AppCompatActivity() {
             setBackgroundResource(R.color.gray)
 
             linearLayout {
+                gravity = Gravity.CENTER
 
                 spinner {
                     adapter = ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item, listOf("C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab", "A", "A# / Bb", "B"))
@@ -90,6 +97,8 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 }
+            }.lparams(width = matchParent, height = 0) {
+                weight = 1f
             }
 
             gridLayout {
@@ -104,17 +113,17 @@ class MainActivity : AppCompatActivity() {
                             touches()
                                 .unwrapMap {
                                     when (it.action) {
-                                        MotionEvent.ACTION_DOWN -> MidiMessage.NoteOn(notes[idx], 127)
+                                        MotionEvent.ACTION_DOWN -> MidiMessage.NoteOn(notes[idx], velocity)
                                         MotionEvent.ACTION_UP -> MidiMessage.NoteOff(notes[idx])
                                         else -> null
                                     }
                                 }
                                 .doOnNext { msg ->
                                     val matchingPads = notes.mapIndexed(::Pair).filter { it.second == msg.key }.map { it.first }
-                                    val darkBlue = ContextCompat.getColor(context, R.color.dark_blue)
+                                    val highlight = ContextCompat.getColor(context, R.color.green)
                                     when (msg) {
                                         is MidiMessage.NoteOn ->
-                                            matchingPads.forEach { pads[it]?.backgroundTintList = colorStateList(darkBlue, darkBlue, darkBlue) }
+                                            matchingPads.forEach { pads[it]?.backgroundTintList = colorStateList(highlight, highlight, highlight) }
                                         is MidiMessage.NoteOff ->
                                             matchingPads.forEach { pads[it]?.backgroundTintList = null }
                                 }}
@@ -131,6 +140,20 @@ class MainActivity : AppCompatActivity() {
                 this@MainActivity.pads = pads.toSortedMap().map { it.value }
             }.lparams {
                 gravity = Gravity.CENTER_HORIZONTAL
+                verticalMargin = dip(48)
+            }
+
+            seekBar {
+                max = 127
+                setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(p0: SeekBar?, value: Int, p2: Boolean) {
+                        velocity = value
+                    }
+                    override fun onStartTrackingTouch(p0: SeekBar?) = Unit
+                    override fun onStopTrackingTouch(p0: SeekBar?) = Unit
+                })
+            }.lparams(width = matchParent, height = 0) {
+                weight = 1f
             }
         }
         setScale(12, MAJOR)
