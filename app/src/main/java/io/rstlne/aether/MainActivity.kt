@@ -1,7 +1,9 @@
 package io.rstlne.aether
 
+import android.content.res.ColorStateList
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.content.ContextCompat
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -15,6 +17,16 @@ import org.jetbrains.anko.margin
 import org.jetbrains.anko.spinner
 import org.jetbrains.anko.verticalLayout
 import org.jetbrains.anko.view
+
+
+fun colorStateList(pressed: Int, enabled: Int, disabled: Int) = ColorStateList(
+    arrayOf(
+        intArrayOf(android.R.attr.state_pressed),
+        intArrayOf(android.R.attr.state_enabled),
+        intArrayOf()
+    ),
+    intArrayOf(pressed, enabled, disabled)
+)
 
 class MainActivity : AppCompatActivity() {
 
@@ -97,6 +109,15 @@ class MainActivity : AppCompatActivity() {
                                         else -> null
                                     }
                                 }
+                                .doOnNext { msg ->
+                                    val matchingPads = notes.mapIndexed(::Pair).filter { it.second == msg.key }.map { it.first }
+                                    val darkBlue = ContextCompat.getColor(context, R.color.dark_blue)
+                                    when (msg) {
+                                        is MidiMessage.NoteOn ->
+                                            matchingPads.forEach { pads[it]?.backgroundTintList = colorStateList(darkBlue, darkBlue, darkBlue) }
+                                        is MidiMessage.NoteOff ->
+                                            matchingPads.forEach { pads[it]?.backgroundTintList = null }
+                                }}
                                 .subscribe(midi.output)
 
                         }.lparams {

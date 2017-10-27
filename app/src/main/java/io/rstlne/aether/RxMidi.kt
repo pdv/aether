@@ -15,8 +15,9 @@ import io.reactivex.rxkotlin.addTo
  */
 
 sealed class MidiMessage {
-    data class NoteOn(val key: Int, val velocity: Int) : MidiMessage()
-    data class NoteOff(val key: Int) : MidiMessage()
+    abstract val key: Int
+    data class NoteOn(override val key: Int, val velocity: Int) : MidiMessage()
+    data class NoteOff(override val key: Int) : MidiMessage()
 }
 
 fun MidiMessage.toByteArray(channel: Int): ByteArray {
