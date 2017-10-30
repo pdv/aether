@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         val MINOR = listOf(2, 1, 2, 2, 1, 2, 2)
         val BLUES = listOf(3, 2, 1, 1, 3, 2)
         val MIDI_UUID = "03B80E5A-EDE8-4B33-A751-6CE34EC4C700"
+        val BOTTOM_NOTE = 24
     }
 
     private lateinit var midi: RxMidi
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pads: List<View>
     private val notes: MutableList<Int> = (0..ROWS * COLS).map { 0 }.toMutableList()
 
-    private var root = 12
+    private var root = BOTTOM_NOTE
         set(value) {
             field = value
             setScale(root, scale)
@@ -98,7 +99,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         midi = RxMidiImpl(this)
-        requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 1)
+        midi.start()
+        //requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 1)
 
         verticalLayout {
             setBackgroundResource(R.color.gray)
@@ -110,7 +112,7 @@ class MainActivity : AppCompatActivity() {
                     adapter = ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item, listOf("C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab", "A", "A# / Bb", "B"))
                     onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(p0: AdapterView<*>?, p1: View?, idx: Int, p3: Long) {
-                            root = idx + 12
+                            root = idx + BOTTOM_NOTE
                         }
                         override fun onNothingSelected(p0: AdapterView<*>?) = Unit
                     }

@@ -6,10 +6,12 @@ import android.media.midi.MidiInputPort
 import android.media.midi.MidiManager
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.Consumer
 import io.reactivex.rxkotlin.addTo
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Created by pdv on 10/27/17.
@@ -59,10 +61,19 @@ class RxMidiImpl(context: Context) : RxMidi {
         }, Handler(Looper.getMainLooper()))
     }
 
+    private var running = AtomicBoolean(false)
+
     override fun start(bluetoothDevice: BluetoothDevice) {
+        if (running.getAndSet(true)) {
+            return
+        }
         disposeBag.clear()
         midiManager.openBluetoothDevice(bluetoothDevice, {
-            routeOutput(it.openInputPort(0))
+            try {
+                routeOutput(it.openInputPort(0))
+            } catch (e: Exception) {
+                Log.e("BLUETOOTH MIDI", "Failed to open port")
+            }
         }, Handler(Looper.getMainLooper()))
     }
 
