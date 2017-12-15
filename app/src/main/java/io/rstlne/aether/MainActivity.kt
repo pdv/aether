@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         val MAJOR = listOf(2, 2, 1, 2, 2, 2, 1)
         val MINOR = listOf(2, 1, 2, 2, 1, 2, 2)
         val BLUES = listOf(3, 2, 1, 1, 3, 2)
+        val CHROMATIC = (0..11).map { 1 }
         val MIDI_UUID = "03B80E5A-EDE8-4B33-A751-6CE34EC4C700"
         val BOTTOM_NOTE = 24
     }
@@ -123,7 +124,8 @@ class MainActivity : AppCompatActivity() {
                     val options = listOf(
                         "Major" to MAJOR,
                         "Minor" to MINOR,
-                        "Blues" to BLUES
+                        "Blues" to BLUES,
+                        "Chromatic" to CHROMATIC
                     )
                     adapter = ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item, options.map { it.first })
                     onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -137,7 +139,8 @@ class MainActivity : AppCompatActivity() {
                 button {
                     text = "Reconnect"
                     setOnClickListener {
-                        setupBluetooth()
+                        midi.start()
+                        //setupBluetooth()
                     }
                 }
 

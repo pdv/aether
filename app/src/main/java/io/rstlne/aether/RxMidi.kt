@@ -45,7 +45,11 @@ class RxMidiImpl(context: Context) : RxMidi {
     override fun start() {
         // TODO: More than one device
         disposeBag.clear()
-        val info = midiManager.devices[0]
+        val info = midiManager.devices.getOrNull(0)
+        if (info == null) {
+            Log.e("RxMidi", "Failed to open midi device")
+            return
+        }
         midiManager.openDevice(info, {
             routeOutput(it.openInputPort(0))
         }, Handler(Looper.getMainLooper()))
