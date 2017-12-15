@@ -1,22 +1,15 @@
 package io.rstlne.aether
 
-import android.Manifest
-import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
-import android.content.pm.PackageManager
 import android.content.res.ColorStateList
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.ParcelUuid
-import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
-import android.support.v4.content.PermissionChecker.PERMISSION_GRANTED
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
@@ -25,6 +18,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
 import com.jakewharton.rxbinding2.view.touches
+import io.reactivex.Observable
 import org.jetbrains.anko.button
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.gridLayout
@@ -37,7 +31,6 @@ import org.jetbrains.anko.verticalLayout
 import org.jetbrains.anko.verticalMargin
 import org.jetbrains.anko.view
 
-
 fun colorStateList(pressed: Int, enabled: Int, disabled: Int) = ColorStateList(
     arrayOf(
         intArrayOf(android.R.attr.state_pressed),
@@ -46,6 +39,14 @@ fun colorStateList(pressed: Int, enabled: Int, disabled: Int) = ColorStateList(
     ),
     intArrayOf(pressed, enabled, disabled)
 )
+
+fun <T, R> Observable<T>.unwrapMap(mapper: (T) -> R?): Observable<R> = this
+    .flatMap {
+        val ret = mapper(it)
+        if (ret == null) Observable.empty() else Observable.just(ret)
+    }
+
+fun <T> Observable<T>.debug(tag: String = "Obs") = this.doOnEach { Log.d(tag, it.toString()) }
 
 class MainActivity : AppCompatActivity() {
 
@@ -208,8 +209,8 @@ class MainActivity : AppCompatActivity() {
         pads.forEachIndexed { index, pad ->
             val effectiveIndex = index - (index / COLS) * (COLS / 2)
             val interval = effectiveIndex % scaleLength
+            val octave = effectiveIndex / scaleLength
             pad.setBackgroundResource(if (interval == 0) R.color.dark_blue else R.color.blue)
-            val octave = (effectiveIndex / scaleLength)
             notes[index] = root + (octave * octaveSize) + (intervals.subList(0, interval).sum())
         }
     }
