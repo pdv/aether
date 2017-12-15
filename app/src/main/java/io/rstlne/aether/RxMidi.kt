@@ -23,22 +23,10 @@ sealed class MidiMessage {
     data class NoteOff(override val key: Int) : MidiMessage()
 }
 
-fun MidiMessage.toByteArray(channel: Int): ByteArray {
-    val buffer = ByteArray(32)
-    buffer[0] = (when (this) {
-        is MidiMessage.NoteOn -> 0x90
-        is MidiMessage.NoteOff -> 0x80
-    } + channel).toByte()
-    buffer[1] = when (this) {
-        is MidiMessage.NoteOn -> key
-        is MidiMessage.NoteOff -> key
-    }.toByte()
-    buffer[2] = when (this) {
-        is MidiMessage.NoteOn -> velocity
-        is MidiMessage.NoteOff -> 0
-    }.toByte()
-    return buffer
-}
+fun MidiMessage.toByteArray(channel: Int): ByteArray = when (this) {
+    is MidiMessage.NoteOn -> listOf(0x90 + channel, key, velocity)
+    is MidiMessage.NoteOff -> listOf(0x80 + channel, key, 0)
+}.map(Int::toByte).toByteArray()
 
 interface RxMidi {
     fun start()
