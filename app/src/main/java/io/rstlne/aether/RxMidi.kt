@@ -21,11 +21,13 @@ sealed class MidiMessage {
     abstract val key: Int
     data class NoteOn(override val key: Int, val velocity: Int) : MidiMessage()
     data class NoteOff(override val key: Int) : MidiMessage()
+    data class Control(override val key: Int, val value: Int) : MidiMessage()
 }
 
 fun MidiMessage.toByteArray(channel: Int): ByteArray = when (this) {
     is MidiMessage.NoteOn -> listOf(0x90 + channel, key, velocity)
     is MidiMessage.NoteOff -> listOf(0x80 + channel, key, 0)
+    is MidiMessage.Control -> listOf(0xb0 + channel, key, value)
 }.map(Int::toByte).toByteArray()
 
 interface RxMidi {
