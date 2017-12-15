@@ -1,6 +1,5 @@
 package io.rstlne.aether
 
-import android.R
 import android.content.res.ColorStateList
 import android.util.Log
 import io.reactivex.Observable
@@ -11,8 +10,8 @@ import io.reactivex.Observable
 
 fun colorStateList(pressed: Int, enabled: Int, disabled: Int) = ColorStateList(
     arrayOf(
-        intArrayOf(R.attr.state_pressed),
-        intArrayOf(R.attr.state_enabled),
+        intArrayOf(android.R.attr.state_pressed),
+        intArrayOf(android.R.attr.state_enabled),
         intArrayOf()
     ),
     intArrayOf(pressed, enabled, disabled)

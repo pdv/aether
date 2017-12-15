@@ -10,10 +10,8 @@ import android.os.ParcelUuid
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Gravity
-import android.widget.SeekBar
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.matchParent
-import org.jetbrains.anko.seekBar
 import org.jetbrains.anko.verticalLayout
 import org.jetbrains.anko.verticalMargin
 
@@ -38,17 +36,21 @@ class MainActivity : AppCompatActivity() {
         verticalLayout {
             setBackgroundResource(R.color.gray)
 
-            controls(grid, midi).lparams(width = matchParent, height = 0) {
-                weight = 1f
-                weight = 1f
-            }
-
             grid = pushGrid {
                 output.subscribe(midi.output)
             }.lparams {
                 gravity = Gravity.CENTER_HORIZONTAL
                 verticalMargin = dip(48)
             }
+
+            controls(grid, midi).lparams(width = matchParent, height = 0) {
+                weight = 1f
+                weight = 1f
+            }
+
+            // want the controls above the grid
+            removeView(grid)
+            addView(grid)
 
             seekBar(127) { grid.velocity = it }.lparams(width = matchParent, height = 0) {
                 weight = 1f
