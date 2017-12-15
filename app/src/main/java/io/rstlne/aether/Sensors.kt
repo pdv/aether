@@ -4,6 +4,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.util.Log
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
 import io.reactivex.functions.Consumer
@@ -30,6 +31,16 @@ object AccelerometerMidiSensor: MidiSensor {
 
 }
 
+object LightMidiSensor: MidiSensor {
+
+    override val type: Int = Sensor.TYPE_LIGHT
+
+    override fun eventToMidi(event: SensorEvent): Set<MidiMessage> {
+        return setOf(MidiMessage.Control(4, event.values[0].toInt() * 2))
+    }
+
+}
+
 data class Snsr(
     val midiSensor: MidiSensor,
     val listener: RxSensor,
@@ -41,7 +52,8 @@ class Sensors(
     private val midiOut: Consumer<MidiMessage>
 ) {
     private val sensors: List<Snsr> = listOf<MidiSensor>(
-        AccelerometerMidiSensor
+        AccelerometerMidiSensor,
+        LightMidiSensor
     ).map { Snsr(it, RxSensor(), sensorManager.getDefaultSensor(it.type))}
 
     fun start() {
