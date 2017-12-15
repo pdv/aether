@@ -35,7 +35,7 @@ class PushGrid(ctx: Context) : _GridLayout(ctx) {
     private val pads: List<View>
     private var notes: List<Int> = (0..ROWS * COLS).map { 0 }
 
-    var root = MainActivity.BOTTOM_NOTE
+    var root = C2
         set(value) {
             field = value
             setScale(root, scale)

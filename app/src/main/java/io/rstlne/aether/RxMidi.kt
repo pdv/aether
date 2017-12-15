@@ -84,7 +84,6 @@ class RxMidiImpl(context: Context) : RxMidi {
     private fun routeOutput(inputPort: MidiInputPort) {
         output
             .map { it.toByteArray(channel) }
-            .debug("MIDI")
             .subscribe { inputPort.send(it, 0, 3) }
             .addTo(disposeBag)
     }

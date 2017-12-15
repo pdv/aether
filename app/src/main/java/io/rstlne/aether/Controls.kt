@@ -19,7 +19,7 @@ import org.jetbrains.anko.textView
 
 fun ViewManager.spinner(items: List<String>, onItemSelected: (Int) -> Unit) = spinner {
     adapter = ArrayAdapter<String>(context, R.layout.simple_spinner_dropdown_item, items)
-    onItemSelectedListener = object  : AdapterView.OnItemSelectedListener {
+    onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
         override fun onItemSelected(p0: AdapterView<*>?, p1: View?, idx: Int, p3: Long) {
             onItemSelected(idx)
         }
