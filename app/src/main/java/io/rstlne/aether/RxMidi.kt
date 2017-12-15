@@ -31,12 +31,15 @@ fun MidiMessage.toByteArray(channel: Int): ByteArray = when (this) {
 }.map(Int::toByte).toByteArray()
 
 interface RxMidi {
+    var channel: Int
     fun start()
     fun start(bluetoothDevice: BluetoothDevice)
     val output: Consumer<MidiMessage>
 }
 
 class RxMidiImpl(context: Context) : RxMidi {
+
+    override var channel: Int = 3
 
     override val output: PublishRelay<MidiMessage> = PublishRelay.create()
 
@@ -51,7 +54,12 @@ class RxMidiImpl(context: Context) : RxMidi {
             return
         }
         midiManager.openDevice(info, {
-            routeOutput(it.openInputPort(0))
+            val inputPort = it.openInputPort(0)
+            if (inputPort != null) {
+                routeOutput(inputPort)
+            } else {
+                Log.e("RxMidi", "Failed to open input port")
+            }
         }, Handler(Looper.getMainLooper()))
     }
 
@@ -75,7 +83,7 @@ class RxMidiImpl(context: Context) : RxMidi {
 
     private fun routeOutput(inputPort: MidiInputPort) {
         output
-            .map { it.toByteArray(3) }
+            .map { it.toByteArray(channel) }
             .debug("MIDI")
             .subscribe { inputPort.send(it, 0, 3) }
             .addTo(disposeBag)

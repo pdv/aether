@@ -27,6 +27,7 @@ import org.jetbrains.anko.margin
 import org.jetbrains.anko.matchParent
 import org.jetbrains.anko.seekBar
 import org.jetbrains.anko.spinner
+import org.jetbrains.anko.textView
 import org.jetbrains.anko.verticalLayout
 import org.jetbrains.anko.verticalMargin
 import org.jetbrains.anko.view
@@ -136,8 +137,20 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
+                textView("Channel")
+
+                spinner {
+                    adapter = ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item, (1..16).map(Int::toString))
+                    onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(p0: AdapterView<*>?, p1: View?, idx: Int, p3: Long) {
+                            midi.channel = idx
+                        }
+                        override fun onNothingSelected(p0: AdapterView<*>?) = Unit
+                    }
+                }
+
                 button {
-                    text = "Reconnect"
+                    text = "!"
                     setOnClickListener {
                         midi.start()
                         //setupBluetooth()
