@@ -16,9 +16,12 @@ import android.view.Gravity
 import android.view.View
 import org.jetbrains.anko.AnkoComponent
 import org.jetbrains.anko.AnkoContext
+import org.jetbrains.anko.checkBox
 import org.jetbrains.anko.dip
+import org.jetbrains.anko.linearLayout
 import org.jetbrains.anko.matchParent
 import org.jetbrains.anko.setContentView
+import org.jetbrains.anko.textView
 import org.jetbrains.anko.verticalLayout
 import org.jetbrains.anko.verticalMargin
 
@@ -36,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         midi = RxMidiImpl(this)
         sensors = Sensors(getSystemService(Context.SENSOR_SERVICE) as SensorManager, midi.output)
-        MainActivityUI(midi).setContentView(this)
+        MainActivityUI(midi, sensors).setContentView(this)
     }
 
     override fun onResume() {
@@ -82,7 +85,7 @@ class MainActivity : AppCompatActivity() {
 
 }
 
-class MainActivityUI(private val midi: RxMidi) : AnkoComponent<MainActivity> {
+class MainActivityUI(private val midi: RxMidi, private val sensors: Sensors) : AnkoComponent<MainActivity> {
 
     override fun createView(ui: AnkoContext<MainActivity>): View = with (ui) {
         verticalLayout {
@@ -100,11 +103,52 @@ class MainActivityUI(private val midi: RxMidi) : AnkoComponent<MainActivity> {
                 weight = 1f
             }
 
+            linearLayout {
+                textView("Accelerometer")
+                checkBox {
+                    isChecked = true
+                    setOnCheckedChangeListener { _, checked ->
+                        if (checked) {
+                            sensors.filteredNotes.removeAll(AccelerometerMidiSensor.notes)
+                        } else {
+                            sensors.filteredNotes.addAll(AccelerometerMidiSensor.notes)
+                        }
+                    }
+                }
+                textView("Ambient Light")
+                checkBox {
+                    isChecked = true
+                    setOnCheckedChangeListener { _, checked ->
+                        if (checked) {
+                            sensors.filteredNotes.remove(LightMidiSensor.note)
+                        } else {
+                            sensors.filteredNotes.add(LightMidiSensor.note)
+                        }
+                    }
+                }
+                textView("Gyro")
+                checkBox {
+                    isChecked = true
+                    setOnCheckedChangeListener { _, checked ->
+                        if (checked) {
+                            sensors.filteredNotes.removeAll(GyroMidiSensor.notes)
+                        } else {
+                            sensors.filteredNotes.addAll(GyroMidiSensor.notes)
+                        }
+                    }
+                }
+            }.lparams(width = matchParent, height = 0, weight = 1f)
+
+
             // want the controls above the grid
             removeView(grid)
             addView(grid)
 
             seekBar(127) { grid.velocity = it }.lparams(width = matchParent, height = 0) {
+                weight = 1f
+            }
+
+            seekBar(127) { midi.output.accept(MidiMessage.Control(5, it)) }.lparams(width = matchParent, height = 0) {
                 weight = 1f
             }
         }

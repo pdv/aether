@@ -20,23 +20,39 @@ interface MidiSensor {
 
 object AccelerometerMidiSensor: MidiSensor {
 
+    val notes = setOf(5, 6, 7)
+
     // [-10, 10] -> [0, 127]
     private val Float.normalized: Int get() = ((this + 10) * (127f / 20)).toInt()
 
     override val type: Int = Sensor.TYPE_ACCELEROMETER
 
     override fun eventToMidi(event: SensorEvent): Set<MidiMessage> {
-        return (0..2).map { MidiMessage.Control(it, event.values[it].normalized) }.toSet()
+        return notes.mapIndexed { index, note -> MidiMessage.Control(note, event.values[index].normalized) }.toSet()
     }
 
 }
 
 object LightMidiSensor: MidiSensor {
 
+    val note = 8
+
     override val type: Int = Sensor.TYPE_LIGHT
 
     override fun eventToMidi(event: SensorEvent): Set<MidiMessage> {
-        return setOf(MidiMessage.Control(4, event.values[0].toInt() * 2))
+        return setOf(MidiMessage.Control(note, event.values[0].toInt() * 2))
+    }
+
+}
+
+object GyroMidiSensor : MidiSensor {
+
+    val notes = setOf(9, 10, 11)
+
+    override val type: Int = Sensor.TYPE_GYROSCOPE
+
+    override fun eventToMidi(event: SensorEvent): Set<MidiMessage> {
+        return notes.mapIndexed { index, note -> MidiMessage.Control(note, event.values[index].toInt()) }.toSet()
     }
 
 }
@@ -53,14 +69,18 @@ class Sensors(
 ) {
     private val sensors: List<Snsr> = listOf<MidiSensor>(
         AccelerometerMidiSensor,
-        LightMidiSensor
+        LightMidiSensor,
+        GyroMidiSensor
     ).map { Snsr(it, RxSensor(), sensorManager.getDefaultSensor(it.type))}
+
+    var filteredNotes = mutableSetOf<Int>()
 
     fun start() {
         sensors.forEach { (midiSensor, listener, sensor) ->
             listener.events
                 .map(midiSensor::eventToMidi)
                 .flatMap { Observable.fromIterable(it) }
+                .filter { !filteredNotes.contains(it.key) }
                 .subscribe(midiOut)
             sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
         }
